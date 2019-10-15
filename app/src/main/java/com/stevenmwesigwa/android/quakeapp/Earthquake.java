@@ -7,7 +7,7 @@ public class Earthquake {
     /**
      * Magnitude of the earthquake
      */
-    private String mMagnitude;
+    private double mMagnitude;
 
     /**
      * Location of the earthquake
@@ -27,14 +27,14 @@ public class Earthquake {
     private String mUrl;
 
 
-    public Earthquake(String mMagnitude, String mLocation, String mDate, long timeInMilliseconds) {
+    public Earthquake(double mMagnitude, String mLocation, String mDate, long timeInMilliseconds) {
         this.mMagnitude = mMagnitude;
         this.mLocation = mLocation;
         this.mDate = mDate;
         mTimeInMilliseconds = timeInMilliseconds;
     }
 
-    public String getMagnitude() {
+    public double getMagnitude() {
         return mMagnitude;
     }
 

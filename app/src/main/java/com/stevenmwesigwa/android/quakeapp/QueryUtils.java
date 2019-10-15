@@ -66,8 +66,8 @@ import java.util.ArrayList;
                     JSONObject currentEarthquake= earthquakeArray.getJSONObject(i);
 // Get “properties” JSONObject
                     JSONObject properties= currentEarthquake.getJSONObject("properties");
-// Extract “mag” for magnitude
-                    String magnitude= properties.getString("mag");
+// Extract the value for the key called "mag"
+                    double magnitude = properties.getDouble("mag");
 // Extract “place” for location
                     String location= properties.getString("place");
 // Extract “time” for time
