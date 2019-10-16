@@ -70,6 +70,8 @@ import java.util.ArrayList;
                     double magnitude = properties.getDouble("mag");
 // Extract “place” for location
                     String location= properties.getString("place");
+                    // Extract the value for the key called "url"
+                    String url = properties.getString("url");
 // Extract “time” for time
 // Create Earthquake java object from magnitude, location, and time
                     Date dateObject = new Date(properties.getLong("time"));
@@ -78,7 +80,9 @@ import java.util.ArrayList;
 
 //                    SimpleDateFormat timeFormatter = new SimpleDateFormat("HH:MM");
                     long time = properties.getLong("time");
-                    Earthquake earthquake=new Earthquake(magnitude,location,date, time);
+                    // A {@link Earthquake} object with the magnitude, location, time,
+                    // and url from the JSON response.
+                    Earthquake earthquake = new Earthquake(magnitude, location,date, time, url);
 // Add earthquake to list of earthquakes
                     earthquakes.add(earthquake);
                 }

@@ -10,7 +10,7 @@ https://earthquake.usgs.gov/fdsnws/event/1/
 
 Demo
 ----
-![QuakeApp demo](Readme_images/Screenshot_1571157030.png "QuakeApp demo")
+![QuakeApp demo](Readme_images/demo.gif "QuakeApp demo")
 
 
 Pre-requisites
