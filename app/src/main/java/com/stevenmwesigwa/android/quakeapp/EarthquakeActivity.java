@@ -39,21 +39,27 @@ import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Loader;
 import android.widget.TextView;
 
-public class EarthquakeActivity extends AppCompatActivity implements LoaderCallbacks<List<Earthquake>> {
-    /** TextView that is displayed when the list is empty */
-    private TextView mEmptyStateTextView;
+public class EarthquakeActivity extends AppCompatActivity
+        implements LoaderCallbacks<List<Earthquake>>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
-        /**
-         * Constant value for the earthquake loader ID. We can choose any integer.
-         * This really only comes into play if you're using multiple loaders.
-         */
-        private static final int EARTHQUAKE_LOADER_ID = 1;
+    private static final String LOG_TAG = EarthquakeActivity.class.getName();
+
+    /** URL for earthquake data from the USGS dataset */
+    private static final String USGS_REQUEST_URL =
+            "https://earthquake.usgs.gov/fdsnws/event/1/query";
+
+    /**
+     * Constant value for the earthquake loader ID. We can choose any integer.
+     * This really only comes into play if you're using multiple loaders.
+     */
+    private static final int EARTHQUAKE_LOADER_ID = 1;
+
     /** Adapter for the list of earthquakes */
     private EarthquakeAdapter mAdapter;
-    /** URL for earthquake data from the USGS dataset */
-    private static final String USGS_REQUEST_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?";
 
-    public static final String LOG_TAG = EarthquakeActivity.class.getName();
+    /** TextView that is displayed when the list is empty */
+    private TextView mEmptyStateTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +78,12 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderCallb
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
         earthquakeListView.setAdapter(mAdapter);
+
+        // Obtain a reference to the SharedPreferences file for this app
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        // And register to be notified of preference changes
+        // So we know when the user has adjusted the query settings
+        prefs.registerOnSharedPreferenceChangeListener(this);
 
         // Set an item click listener on the ListView, which sends an intent to a web browser
         // to open a website with more information about the selected earthquake.
@@ -120,32 +132,46 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderCallb
     }
 
     @Override
-    // onCreateLoader instantiates and returns a new Loader for the given ID
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (key.equals(getString(R.string.settings_min_magnitude_key)) ||
+                key.equals(getString(R.string.settings_order_by_key))){
+            // Clear the ListView as a new query will be kicked off
+            mAdapter.clear();
+
+            // Hide the empty state text view as the loading indicator will be displayed
+            mEmptyStateTextView.setVisibility(View.GONE);
+
+            // Show the loading indicator while new data is being fetched
+            View loadingIndicator = findViewById(R.id.loading_indicator);
+            loadingIndicator.setVisibility(View.VISIBLE);
+
+            // Restart the loader to requery the USGS as the query settings have been updated
+            getLoaderManager().restartLoader(EARTHQUAKE_LOADER_ID, null, this);
+        }
+    }
+
+    @Override
     public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
 
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // getString retrieves a String value from the preferences. The second parameter is the default value for this preference.
         String minMagnitude = sharedPrefs.getString(
                 getString(R.string.settings_min_magnitude_key),
                 getString(R.string.settings_min_magnitude_default));
 
-        // parse breaks apart the URI string that's passed into its parameter
-        Uri baseUri = Uri.parse(USGS_REQUEST_URL);
+        String orderBy = sharedPrefs.getString(
+                getString(R.string.settings_order_by_key),
+                getString(R.string.settings_order_by_default)
+        );
 
-        // buildUpon prepares the baseUri that we just parsed so we can add query parameters to it
+        Uri baseUri = Uri.parse(USGS_REQUEST_URL);
         Uri.Builder uriBuilder = baseUri.buildUpon();
 
-        // Append query parameter and its value. For example, the `format=geojson`
         uriBuilder.appendQueryParameter("format", "geojson");
         uriBuilder.appendQueryParameter("limit", "10");
         uriBuilder.appendQueryParameter("minmag", minMagnitude);
-        uriBuilder.appendQueryParameter("orderby", "time");
+        uriBuilder.appendQueryParameter("orderby", orderBy);
 
-        Log.e(LOG_TAG, "Problem building the URL " + new EarthquakeLoader(this, uriBuilder.toString()));
-        // Return the completed uri `http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&limit=10&minmag=minMagnitude&orderby=time
         return new EarthquakeLoader(this, uriBuilder.toString());
-
     }
 
     @Override
@@ -158,12 +184,13 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderCallb
         mEmptyStateTextView.setText(R.string.no_earthquakes);
 
         // Clear the adapter of previous earthquake data
-        mAdapter.clear();
+        //mAdapter.clear();
 
         // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
         // data set. This will trigger the ListView to update.
         if (earthquakes != null && !earthquakes.isEmpty()) {
             mAdapter.addAll(earthquakes);
+//            updateUi(earthquakes);
         }
     }
 
