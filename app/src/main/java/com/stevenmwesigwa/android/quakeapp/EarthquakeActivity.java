@@ -24,6 +24,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,7 +51,7 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderCallb
     /** Adapter for the list of earthquakes */
     private EarthquakeAdapter mAdapter;
     /** URL for earthquake data from the USGS dataset */
-    private static final String USGS_REQUEST_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query";
+    private static final String USGS_REQUEST_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?";
 
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
 
@@ -141,6 +142,7 @@ public class EarthquakeActivity extends AppCompatActivity implements LoaderCallb
         uriBuilder.appendQueryParameter("minmag", minMagnitude);
         uriBuilder.appendQueryParameter("orderby", "time");
 
+        Log.e(LOG_TAG, "Problem building the URL " + new EarthquakeLoader(this, uriBuilder.toString()));
         // Return the completed uri `http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&limit=10&minmag=minMagnitude&orderby=time
         return new EarthquakeLoader(this, uriBuilder.toString());
 
